@@ -1,0 +1,6 @@
+redundant_else=warn
+await_holding_lock=deny
+await_holding_refcell_ref=deny
+cast_loseless=warn
+cast_possible_truncation=warn
+case_sensitive_file_extension_comparisons=warn
