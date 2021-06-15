@@ -1,0 +1,17 @@
+# Logs
+logs/
+
+# git
+.git
+.bin
+.github
+.gitignore
+
+# Markdowns
+*.md
+**/*.md
+
+# Builds and config
+target/
+Cargo.lock
+rustfmt.toml
