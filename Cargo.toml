@@ -1,4 +1,6 @@
 [workspace]
 members = [
-  "morgaine"
+  "morg_db",
+  "morgaine",
+  "morg_commons",
 ]

@@ -1,10 +1,28 @@
 use std::fs::{self, File};
 use std::io::{self, Read};
 use std::path::Path;
+use std::env;
 
 const SECRETS: &str = "/run/secrets/";
 
-pub fn load() -> dotenv::Result<std::path::PathBuf> {
+pub fn load() {
+	match env::var("MORGAINE_ENV") {
+		Ok(has_env) => {
+			let env_store = if has_env != "production" {
+				dotenv::dotenv()
+			} else {
+				load_env()
+			};
+
+			env_store.ok();
+		}
+		Err(_) => {
+			env::set_var("MORGAINE_ENV", "development");
+		}
+	}
+}
+
+fn load_env() -> dotenv::Result<std::path::PathBuf> {
 	let entries = fs::read_dir(SECRETS)
 		.expect("cannot find directory")
 		.map(|res| res.map(|e| e.path()))
@@ -37,4 +55,11 @@ fn load_to_env(name: &str, v: &str) -> io::Result<()> {
 	std::env::set_var(name, v);
 
 	Ok(())
+}
+
+#[macro_export]
+macro_rules! menv {
+	($x:expr) => {
+		std::env::var($x).expect("cannot load var.")
+	};
 }

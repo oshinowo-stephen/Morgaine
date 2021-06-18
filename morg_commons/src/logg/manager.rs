@@ -37,8 +37,8 @@ impl Log for MorgLogger {
 			r.args(),
 		);
 
-		match super::logfm::create_log_file() {
-			Ok(mut file) => match super::logfm::append_log_file(&mut file, &contents) {
+		match super::files::create_log_file() {
+			Ok(mut file) => match super::files::append_log_file(&mut file, &contents) {
 				Ok(_) => {},
 				Err(error) => eprintln!("unable to append to current log file: {}", error)
 			},
