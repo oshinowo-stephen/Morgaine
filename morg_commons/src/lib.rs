@@ -1,25 +1,22 @@
+#[macro_use]
 extern crate log;
+extern crate ring;
+extern crate scrypt;
 extern crate dotenv;
 extern crate chrono;
 extern crate colored;
+#[macro_use]
+extern crate serde;
+extern crate serde_yaml;
+extern crate aes_gcm_siv as aes;
 
 pub mod logg;
 pub mod menv;
+pub mod config;
 
-#[cfg(test)]
-mod tests {
-	use super::logg::files;
-
-	#[test]
-	fn log_create_file() {
-		assert!(files::create_log_file().is_ok())
-	}
-
-	#[test]
-	fn log_append_file () {
-		let mut file = files::create_log_file()
-			.expect("cannot generate log file.");
-
-		assert!(files::append_log_file(&mut file, "TEST APPEND!").is_ok())
-	}
+#[macro_export]
+macro_rules! stringify {
+	($x:expr) => {
+		$x.to_string()
+	};
 }
