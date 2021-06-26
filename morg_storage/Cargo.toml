@@ -1,0 +1,14 @@
+[package]
+name = "morg_storage"
+version = "0.1.0"
+authors = ["whoastonic <kingstonicthe1@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.14"
+barrel = "0.6.5"
+morg_commons = { path = "../morg_commons" }
+serde = { version = "1.0.126", features = ["derive"] }
+diesel = { version = "1.4.7", features = ["postgres", "r2d2"] }
