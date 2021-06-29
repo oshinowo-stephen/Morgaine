@@ -1,36 +1,40 @@
 extern crate morg_commons;
+extern crate async_std;
+extern crate futures;
+extern crate asynv;
 
 use morg_commons::config::load as load_config;
-use std::env::{set_var as set_env, remove_var as del_env};
+
+type AsyncResult = std::io::Result<()>;
  
-#[test]
-fn load_from_env() {
+#[async_std::test]
+async fn load_from_env() -> AsyncResult {
 	// setup environment.
-	set_env("MORG_ADDR", "127.0.0.1:7880");
+	asynv::set("MORG_ADDR", "127.0.0.1:7880").await;
 
 	// load from env.
 	let conf = load_config(None);
 
-	assert_eq!(&conf.address, "127.0.0.1:7880")
+	Ok(assert_eq!(&conf.address, "127.0.0.1:7880"))
 }
 
-#[test]
-fn load_from_file() {
+#[async_std::test]
+async fn load_from_file() -> AsyncResult {
 	// clear vars if any.
-	del_env("MORG_ADDR");
+	asynv::rm("MORG_ADDR").await;
 
 	// load from path.
 	let path = Some("__test__/data/mock_config.yml");
 
 	let conf = load_config(path);
 
-	assert_eq!(&conf.address, "127.0.0.1:6880")
+	Ok(assert_eq!(&conf.address, "127.0.0.1:6880"))
 }
 
-#[test]
-fn isnt_met_with_env() {
+#[async_std::test]
+async fn isnt_met_with_env() -> AsyncResult {
 	// setup environment.
-	set_env("MORG_ADDR", "127.0.0.1:7880");
+	asynv::set("MORG_ADDR", "127.0.0.1:7880").await;
 
 	// load from files
 	let p = Some("__tests__/data/mock_config");
@@ -38,15 +42,15 @@ fn isnt_met_with_env() {
 
 	// env loaded in from: `load_from_env` test.
 	assert_eq!(&config.address, "127.0.0.1:7880");
-	assert_eq!(&config.db_client, "sqlite");
+	Ok(assert_eq!(&config.db_client, "sqlite"))
 }
 
-#[test]
-fn load_defaults() {
+#[async_std::test]
+async fn load_defaults() -> AsyncResult {
 	// clear current environment
-	del_env("MORG_ADDR");
+	asynv::rm("MORG_ADDR").await;
 
 	let config = load_config(None);
 
-	assert_eq!(&config.address, "127.0.0.1:6880")
+	Ok(assert_eq!(&config.address, "127.0.0.1:6880"))
 }
