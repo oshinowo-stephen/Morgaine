@@ -57,6 +57,6 @@ async fn load_defaults() -> AsyncResult {
 
 	let config = load_config(Path::new("")).await.unwrap();
 	asynv::rm("MORG_DB_ADDR").await;
-	
+
 	Ok(assert_eq!(&config.address.unwrap(), "127.0.0.1:6880"))
 }
