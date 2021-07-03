@@ -1,72 +1,98 @@
-use super::stringify;
-
-use std::env::var as load_env;
-use std::io::{self, Read};
+use std::io::{Read, ErrorKind};
+use std::fs::{OpenOptions};
 use std::path::Path;
-use std::fs;
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct LoadConfig {
-    pub db_url: String,
-    pub address: String,
-    pub db_client: String,
-    pub db_settings: Option<DatabaseSettings>
+pub struct ReturnedConfig {
+    pub address: Option<String>,
+    pub database: Option<DatabaseSettings>, 
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseSettings {
-    pub port: String,
-    pub host: String,
-    pub database: String,
-    pub username: String,
+    pub address: String,
     pub password: String,
+    pub username: String,
+    pub database: String,
 }
 
-pub fn load(conf_path: Option<&str>) -> LoadConfig {
-    if let Ok(file_conf) = load_from_file(Path::new(conf_path.unwrap_or_else(|| ""))) {
-        LoadConfig {
-            address: load_env("MORG_ADDR")
-                .unwrap_or_else(|_| file_conf.clone().address),
-            db_url: load_env("MORG_DB_URL")
-                .unwrap_or_else(|_| file_conf.clone().db_url),
-            db_client: load_env("MORG_DB_CLIENT")
-                .unwrap_or_else(|_| file_conf.clone().db_client),
-            ..Default::default()
+impl Default for ReturnedConfig {
+    fn default() -> Self {
+        Self {
+            database: None,
+            address: Some("127.0.0.1:6880".to_owned()),
         }
-    } else {
-        LoadConfig::default()
     }
 }
 
-fn load_from_file(path: &Path) -> io::Result<LoadConfig> {
-    match fs::File::open(path) {
+pub type Result = std::result::Result<ReturnedConfig, Box<dyn std::error::Error>>;
+
+pub async fn fetch(path: &Path) -> Result {
+    match OpenOptions::new()
+        .read(true)
+        .open(path)
+    {
         Ok(mut file) => {
             let mut contents = String::new();
 
-            file.read_to_string(&mut contents)?;
+            file.read_to_string(&mut contents)
+                .expect("cannot read contents from string.");
 
-            match serde_yaml::from_str::<LoadConfig>(&contents) {
-                Ok(config) => Ok(config),
-                Err(error) => if let Some(location) = error.location() {
-                    error!("Invalid YAML on line: {:?}, loading default config", location);
-
-                    Ok(LoadConfig::default())
-                } else {
-                    Ok(LoadConfig::default())
-                }
+            match serde_yaml::from_str::<ReturnedConfig>(&contents) {
+                Ok(returned) => Ok(pass_values_into_env(returned).await),
+                Err(error) => Err(Box::new(error))
             }
         },
-        Err(_) => Ok(LoadConfig::default())
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => Ok(
+                pass_values_into_env(ReturnedConfig::default()).await
+            ),
+            _ => Err(Box::new(error))
+        }
     }
 }
 
-impl Default for LoadConfig {
-    fn default() -> Self {
-        Self {
-            db_settings: None,
-            db_client: stringify!("sqlite"),
-            address: stringify!("127.0.0.1:6880"),
-            db_url: stringify!("storage/morg_db.sqlite"),
-        }
+async fn pass_values_into_env(values: ReturnedConfig) -> ReturnedConfig {
+    let db_values = values.clone().database;
+
+    ReturnedConfig {
+        address: Some(asynv::get("MORG_ADDR").await
+            .unwrap_or_else(|_| values.address.unwrap_or_default())),
+        database: if db_values.is_none() {
+            if asynv::get("MORG_DB_ADDR").await.is_err() {
+                panic!("An database config is not present, please provide settings in the config.")
+            } else {
+                Some(DatabaseSettings {
+                    address: asynv::get("MORG_DB_ADDR").await
+                        .unwrap_or_else(|_| String::new()),
+                    password: asynv::get("MORG_DB_PASS").await
+                        .unwrap_or_else(|_| String::new()),
+                    username: asynv::get("MORG_DB_USER").await
+                        .unwrap_or_else(|_| String::new()),
+                    database: asynv::get("MORG_DB_NAME").await
+                        .unwrap_or_else(|_| String::new()),
+                })
+            }
+        } else {
+            Some(DatabaseSettings {
+                address: asynv::get("MORG_DB_ADDR").await
+                    .unwrap_or_else(|_| {
+                        db_values.clone().unwrap().address
+                    }),
+                password: asynv::get("MORG_DB_PASS").await
+                    .unwrap_or_else(|_| {
+                        db_values.clone().unwrap().password
+                    }),
+                username: asynv::get("MORG_DB_USER").await
+                    .unwrap_or_else(|_| {
+                        db_values.clone().unwrap().username
+                    }),
+                database: asynv::get("MORG_DB_NAME").await
+                    .unwrap_or_else(|_| {
+                        db_values.clone().unwrap().database
+                    })
+            })
+        },
+        ..values
     }
 }

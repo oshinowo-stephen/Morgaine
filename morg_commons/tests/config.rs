@@ -3,7 +3,8 @@ extern crate async_std;
 extern crate futures;
 extern crate asynv;
 
-use morg_commons::config::load as load_config;
+use morg_commons::config::fetch as load_config;
+use std::path::Path;
 
 type AsyncResult = std::io::Result<()>;
  
@@ -11,11 +12,13 @@ type AsyncResult = std::io::Result<()>;
 async fn load_from_env() -> AsyncResult {
 	// setup environment.
 	asynv::set("MORG_ADDR", "127.0.0.1:7880").await;
+	asynv::set("MORG_DB_ADDR", "127.0.0.1:5432").await;
 
 	// load from env.
-	let conf = load_config(None);
+	let conf = load_config(Path::new("")).await.unwrap();
+	asynv::rm("MORG_DB_ADDR").await;
 
-	Ok(assert_eq!(&conf.address, "127.0.0.1:7880"))
+	Ok(assert_eq!(&conf.address.unwrap(), "127.0.0.1:7880"))
 }
 
 #[async_std::test]
@@ -24,11 +27,11 @@ async fn load_from_file() -> AsyncResult {
 	asynv::rm("MORG_ADDR").await;
 
 	// load from path.
-	let path = Some("__test__/data/mock_config.yml");
+	let p = "__tests__/data/mock_config.yml";
+	let config = load_config(Path::new(p)).await.unwrap();
+	asynv::rm("MORG_DB_ADDR").await;
 
-	let conf = load_config(path);
-
-	Ok(assert_eq!(&conf.address, "127.0.0.1:6880"))
+	Ok(assert_eq!(&config.address.unwrap(), "127.0.0.1:6880"))
 }
 
 #[async_std::test]
@@ -37,20 +40,23 @@ async fn isnt_met_with_env() -> AsyncResult {
 	asynv::set("MORG_ADDR", "127.0.0.1:7880").await;
 
 	// load from files
-	let p = Some("__tests__/data/mock_config");
-	let config = load_config(p);
+	let p = "__tests__/data/mock_config.yml";
+	let config = load_config(Path::new(p)).await.unwrap();
+	asynv::rm("MORG_DB_ADDR").await;
 
 	// env loaded in from: `load_from_env` test.
-	assert_eq!(&config.address, "127.0.0.1:7880");
-	Ok(assert_eq!(&config.db_client, "sqlite"))
+	assert_eq!(&config.address.unwrap(), "127.0.0.1:7880");
+	Ok(assert_eq!(&config.database.unwrap().password, "something12"))
 }
 
 #[async_std::test]
 async fn load_defaults() -> AsyncResult {
 	// clear current environment
 	asynv::rm("MORG_ADDR").await;
+	asynv::set("MORG_DB_ADDR", "127.0.0.1:5432").await;
 
-	let config = load_config(None);
-
-	Ok(assert_eq!(&config.address, "127.0.0.1:6880"))
+	let config = load_config(Path::new("")).await.unwrap();
+	asynv::rm("MORG_DB_ADDR").await;
+	
+	Ok(assert_eq!(&config.address.unwrap(), "127.0.0.1:6880"))
 }

@@ -1,2 +1,6 @@
 address: 127.0.0.1:6880
-db_client: sqlite
+database:
+  address: 127.0.0.1:5432
+  username: something32
+  database: 177013_meta
+  password: something12
