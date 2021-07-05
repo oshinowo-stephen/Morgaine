@@ -7,11 +7,9 @@ use morg_commons::encrypt;
 
 #[async_std::test]
 async fn test_hasher() -> io::Result<()> {
-	let salt = encrypt::random::generate_salt(); // Generates a random 16 character salt for me.
+	let hash = encrypt::hasher::hash("uwu_kawaii177013"); // A Password I use on a daily basis
 
-	let hash = encrypt::hasher::hash(b"uwu_kawaii177013", salt.as_bytes(), b""); // A Password I use on a daily basis
-
-	assert!(encrypt::hasher::comp(b"uwu_kawaii177013", hash.as_slice()));
+	assert!(encrypt::hasher::compare(&hash, "uwu_kawaii177013"));
 
 	Ok(())
 }

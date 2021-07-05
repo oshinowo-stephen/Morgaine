@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 rand = "0.8.4"
-scrypt =  "0.7" 
+scrypt = "0.7"
 ring = "0.16.20"
 dotenv = "0.15.0"
 chrono = "0.4.19"
