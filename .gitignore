@@ -2,16 +2,20 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=rust
 
 # Rust builds
-/target/
+**/target/
 
 # Editorconfig
 .editorconfig
 
 # Environment
 *.env
+**/*.env
 
 # Logs
 logs/
 **/logs
+
+# Config
+config/*.yml
 
 # End of https://www.toptal.com/developers/gitignore/api/rust

@@ -13,3 +13,4 @@ extern crate aes_gcm_siv as aes;
 pub mod logg;
 pub mod menv;
 pub mod config;
+pub mod encrypt;
