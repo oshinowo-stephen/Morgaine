@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EXEC_ERR=""
-ERR_MESSAGE="Execution on: \"$EXEC_ERR" has failed, exiting process."
+ERR_MESSAGE="Execution on: \"$EXEC_ERR\" has failed, exiting process."
 
 cargo build
 if [ $? -eq 0 ]; then
@@ -27,7 +27,7 @@ fi
 
 cargo clippy -- -D warnings
 if [ $? -eq 0 ]; then
-	echo LINTER PASSED! Everything looks good to-go	
+	echo "LINTER PASSED! Everything looks good to-go"	
 else
 	EXEC_ERR="cargo clippy"
 
