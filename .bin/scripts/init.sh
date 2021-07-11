@@ -1,0 +1,9 @@
+#!/bin/bash
+SCRIPT_DIRECTORY="$PWD/.bin/scripts"
+
+chmod +x $SCRIPT_DIRECTORY/pg/MORG_PERMS.sh &&
+chmod +x $SCRIPT_DIRECTORY/pg/MORG_TABLES.sh &&
+chmod +x $SCRIPT_DIRECTORY/pre-init/MORG_READS.sh
+
+sh $SCRIPT_DIRECTORY/pg/MORG_PERMS.sh &&
+sh $SCRIPT_DIRECTORY/pg/MORG_TABLES.sh

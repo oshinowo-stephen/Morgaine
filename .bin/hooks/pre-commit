@@ -1,0 +1,39 @@
+#!/bin/bash
+
+EXEC_ERR=""
+ERR_MESSAGE="Execution on: \"$EXEC_ERR" has failed, exiting process."
+
+cargo build
+if [ $? -eq 0 ]; then
+	echo BUILD PASSED! Running tests...
+else
+	EXEC_ERR="cargo build"
+
+	echo ERR_MESSAGE
+
+	exit 1
+fi
+
+cargo test
+if [ $? -eq 0 ]; then
+	echo TESTS PASSED! Running linter...
+else
+	EXEC_ERR="cargo test"
+
+	echo ERR_MESSAGE
+
+	exit 1
+fi
+
+cargo clippy -- -D warnings
+if [ $? -eq 0 ]; then
+	echo LINTER PASSED! Everything looks good to-go	
+else
+	EXEC_ERR="cargo clippy"
+
+	echo ERR_MESSAGE
+
+	exit 1
+fi
+
+exit 0
