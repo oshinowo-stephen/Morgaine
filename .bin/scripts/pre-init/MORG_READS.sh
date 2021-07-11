@@ -1,9 +1,30 @@
 #!/bin/bash
 set -e
 
-USER="$(< /run/secrets/READONLY_USER)"
-PASSW="$(< /run/secrets/READONLY_PASS)"
+if [ -z "${READONLY_USER}" ]; then
+  USER="$(< /run/secrets/READONLY_USER)"
+else
+  USER=${READONLY_USER}
+fi
+
+if [ -z "${READONLY_PASS}" ];
+  PASSW="$(< /run/secrets/READONLY_PASS)"
+else
+  PASSW=${READONLY_PASS}
+fi
+
 READONLY=$READONLY_ROLE
+
+# D O W N
+
+PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+  REVOKE ${READONLY} FROM ${USER};
+
+  DROP USER IF EXISTS ${USER};
+  DROP ROLE IF EXISTS ${READONLY};
+EOSQL
+
+# U P
 
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
   CREATE ROLE ${READONLY};
