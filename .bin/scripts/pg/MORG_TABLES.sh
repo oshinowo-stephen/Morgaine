@@ -35,19 +35,21 @@ PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --dbname="morg" --userna
 		FOREIGN KEY (master_id) REFERENCES masters(id)
 	);
 
-	CREATE TABLE IF NOT EXISTS passwords (
-		vault_id VARCHAR NOT NULL,
-		account_id VARCHAR NOT NULL,
-		vault_passwd VARCHAR NOT NULL,
-		id VARCHAR NOT NULL PRIMARY KEY
-	);
-
 	CREATE TABLE IF NOT EXISTS accounts (
 		phone VARCHAR,
 		username VARCHAR,
 		email VARCHAR NOT NULL,
 		domain VARCHAR NOT NULL,
 		id VARCHAR NOT NULL PRIMARY KEY
+	);
+
+	CREATE TABLE IF NOT EXISTS passwords (
+		vault_id VARCHAR NOT NULL,
+		account_id VARCHAR NOT NULL,
+		vault_passwd VARCHAR NOT NULL,
+		id VARCHAR NOT NULL PRIMARY KEY,
+		FOREIGN KEY (account_id) REFERENCES accounts(id),
+		FOREIGN KEY (vault_id) REFERENCES vaults(id)
 	);
 
 	CREATE TABLE IF NOT EXISTS account_questions (
