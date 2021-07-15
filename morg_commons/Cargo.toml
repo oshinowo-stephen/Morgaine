@@ -13,11 +13,11 @@ ring = "0.16.20"
 dotenv = "0.15.0"
 chrono = "0.4.19"
 colored = "2.0.0"
-serde_yaml = "0.8"
+directories = "3.0.2"
+config = "0.11.0"
 aes-gcm-siv = "0.10.1"
-serde = { version = "1", features = ["derive"] }
 log = { version = "0.4.14", features = ["std"] }
-asynv = { git = "https://github.com/whoastonic/asynv", branch = "main" }
+serde = { version = "1", features = [ "derive" ] }
 
 [dev-dependencies]
 futures = "0.3.15"
