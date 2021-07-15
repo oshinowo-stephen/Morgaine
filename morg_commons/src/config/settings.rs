@@ -1,26 +1,26 @@
 #[derive(Debug, Deserialize)]
 pub struct MainConfig {
-	cache: CacheConfig,
-	server: ServerConfig,
-	database_url: String,
-	cloud_store: Option<CloudStoreDetails>,
+	pub cache: CacheConfig,
+	pub server: ServerConfig,
+	pub database_url: String,
+	pub cloud_store: Option<CloudStoreDetails>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CacheConfig {
-	host: String,
-	port: Option<String>,
-	password: Option<String>,
+	pub host: String,
+	pub port: Option<String>,
+	pub password: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
-	port: isize,
-	host: String,
-	store: Option<String>,
+	pub port: isize,
+	pub host: String,
+	pub store: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CloudStoreDetails {
-	token: String,
+	pub token: String,
 }
