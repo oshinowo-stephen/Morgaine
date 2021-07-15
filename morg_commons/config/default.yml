@@ -1,0 +1,6 @@
+cache:
+  host: memory
+server:
+  port: 7890
+  host: 127.0.0.1
+database_url: postgresql://morgaine:morgaine12@localhost/morgdb

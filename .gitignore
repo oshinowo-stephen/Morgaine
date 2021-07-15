@@ -17,5 +17,6 @@ logs/
 
 # Config
 config/*.yml
+!config/default.yml
 
 # End of https://www.toptal.com/developers/gitignore/api/rust
