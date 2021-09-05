@@ -8,7 +8,8 @@ edition = "2018"
 
 [dependencies]
 log = "0.4.14"
-barrel = "0.6.5"
+uuid = "0.8.2"
+refinery = "0.5.0"
 morg_commons = { path = "../morg_commons" }
 serde = { version = "1.0.126", features = ["derive"] }
 diesel = { version = "1.4.7", features = ["postgres", "r2d2"] }
