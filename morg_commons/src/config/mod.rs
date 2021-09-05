@@ -1,6 +1,6 @@
+use conf::{self, Config, File};
 use dirs::ProjectDirs;
 use std::path::PathBuf;
-use conf::{self, Config, File};
 
 pub mod settings;
 
@@ -18,15 +18,15 @@ pub fn load() -> Result<settings::MainConfig, conf::ConfigError> {
 		Ok(s.try_into().unwrap())
 	} else {
 		Err(conf::ConfigError::NotFound(
-			"unable to locate config path.".to_owned()
+			"unable to locate config path.".to_owned(),
 		))
 	}
 }
 
 fn get_path() -> Option<PathBuf> {
-    if let Some(morg) = ProjectDirs::from("com", "Settings", "Morgaine") {
-        Some(morg.config_dir().to_owned())
-    } else {
-        None
-    }
+	if let Some(morg) = ProjectDirs::from("com", "Settings", "Morgaine") {
+		Some(morg.config_dir().to_owned())
+	} else {
+		None
+	}
 }
