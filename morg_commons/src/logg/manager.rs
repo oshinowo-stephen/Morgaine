@@ -1,11 +1,6 @@
-use log::{
-	Log,
-	Level,
-	Record, 
-	Metadata, 
-};
-use colored::*;
 use chrono::Local;
+use colored::*;
+use log::{Level, Log, Metadata, Record};
 
 use std::env;
 
@@ -17,7 +12,7 @@ impl Log for MorgLogger {
 			metadata.level() <= Level::Info
 		} else {
 			metadata.level() <= Level::Debug
-		} 
+		}
 	}
 
 	fn log(&self, r: &Record) {
@@ -39,10 +34,10 @@ impl Log for MorgLogger {
 
 		match super::files::create_log_file() {
 			Ok(mut file) => match super::files::append_log_file(&mut file, &contents) {
-				Ok(_) => {},
-				Err(error) => eprintln!("unable to append to current log file: {}", error)
+				Ok(_) => {}
+				Err(error) => eprintln!("unable to append to current log file: {}", error),
 			},
-			Err(err) => eprintln!("cannot create log file, reason: {}", err)
+			Err(err) => eprintln!("cannot create log file, reason: {}", err),
 		}
 
 		println!("{}", contents);
@@ -50,7 +45,6 @@ impl Log for MorgLogger {
 
 	fn flush(&self) {}
 }
-
 
 fn get_lvl_str(lvl: log::Level) -> String {
 	let lvl_str = match lvl {

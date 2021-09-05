@@ -1,72 +1,76 @@
-pub mod random;
 pub mod hasher;
+pub mod random;
 
-use ring::digest::{self as dig, SHA256, Digest};
-use aes::{aead, Key, Aes256GcmSiv, Nonce};
+use super::utils::file_manager;
+
 use aead::{Aead, NewAead};
+use aes::{aead, Aes256GcmSiv, Key, Nonce};
+
+use std::fs::File;
+use std::path::Path;
 
 pub use random::*;
 
 pub struct CipherBlock {
 	pub nonce: Nonce,
 	pub text: Vec<u8>,
-	pub cipher: Aes256GcmSiv 
+	pub cipher: Aes256GcmSiv,
 }
 
-pub fn encrypt_block(sig: &str, k: &[u8], msg: &[u8]) -> CipherBlock {
+#[derive(Debug)]
+pub enum CipherError {
+	Decryption(String),
+	Encryption(String),
+}
+
+pub type Result<T> = std::result::Result<T, CipherError>;
+
+pub fn create_encrypt_file(key: &[u8], path: &Path, incoming_data: &[u8]) -> Result<File> {
+	let sig = path.file_name().unwrap().to_str();
+
+	if let Ok(block) = encrypt_block(sig.unwrap(), key, incoming_data) {
+		let file = file_manager::create_file(path, Some(block.text.as_slice()));
+
+		Ok(file.unwrap())
+	} else {
+		Err(CipherError::Encryption(format!("Unable to encrypt incoming data.")))
+	}
+
+}
+
+pub fn encrypt_block(sig: &str, k: &[u8], msg: &[u8]) -> Result<CipherBlock> {
 	let incoming_key = digest(k);
 
 	let key = Key::from_slice(incoming_key.as_ref());
 	let cipher = Aes256GcmSiv::new(key);
 
-	let supplied_nonce = format!("{}.{:?}.{}", sig, k, random::generate_salt());
+	let supplied_nonce = format!("{}.{:?}.{}", sig, k, generate_salt());
 	let incoming_nonce = digest(supplied_nonce.as_bytes());
 	let nonce = Nonce::from_slice(incoming_nonce.as_ref());
-	
-	let encrypted_text = match cipher.encrypt(&nonce, msg) {
-		Ok(result) => result,
-		Err(error) => panic!("An unhandled error occurred: {}", error)
-	};
 
-	CipherBlock {
-		cipher,
-		nonce: nonce.clone(),
-		text: encrypted_text,
+	match cipher.encrypt(&nonce, msg) {
+		Ok(text) => Ok(CipherBlock {
+			text,
+			cipher,
+			nonce: nonce.clone(),
+		}),
+		Err(error) => Err(CipherError::Encryption(format!(
+			"An encryption error was noticed: {:#?}",
+			error
+		))),
 	}
-} 
+}
 
-pub fn decrypt_block(block: CipherBlock) -> Vec<u8> {
+pub fn decrypt_block<'d>(block: CipherBlock) -> Result<Vec<u8>> {
 	match block.cipher.decrypt(&block.nonce, block.text.as_slice()) {
-		Ok(result) => result,
-		Err(error) => panic!("An unknown error has occurred: {}", error)
+		Ok(result) => {
+			let block = result.clone();
+
+			Ok(block)
+		},
+		Err(error) => Err(CipherError::Decryption(format!(
+			"An decryption error was noticed: {:#?}",
+			error
+		))),
 	}
 }
-
-fn digest(incoming: &[u8]) -> Digest {
-	dig::digest(&SHA256, incoming)
-}
-
-// pub type Block = aes::Aes256GcmSiv;
-
-// pub fn initialize() -> Vec<Block> {
-
-// }
-
-// use aes::Aes256GcmSiv;
-
-// pub struct Block {
-// 	key: String,
-// 	nonce: String,
-// }
-
-// pub type Cipher = Aes256GcmSiv;
-
-// impl Block {
-// 	pub fn new(k: &str) -> Self {
-// 		Self {}
-// 	}
-
-// 	pub fn from(k: &str) -> Cipher {
-
-// 	}
-// }
